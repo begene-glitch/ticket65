@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 전성기 티켓 생성기 | 에듀그라피 랩</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #1e293b;
+            --accent: #ec4899;
+            --bg: #f8fafc;
+            --text: #334155;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        header { margin-bottom: 40px; }
+        header h1 { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 2.8rem; 
+            color: var(--primary-dark);
+            margin: 0;
+        }
+        header p { color: #64748b; margin-top: 10px; font-size: 1.1rem; }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 50px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-group { margin-bottom: 25px; }
+        label { 
+            display: block; 
+            font-size: 0.95rem; 
+            font-weight: 700; 
+            color: var(--primary); 
+            margin-bottom: 10px;
+        }
+        .help-text { font-size: 0.8rem; color: #94a3b8; font-weight: normal; margin-bottom: 5px; display: block;}
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .ticket-preview-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #ticketCaptureArea {
+            padding: 20px;
+            background-color: var(--bg);
+            display: inline-block;
+        }
+
+        .ticket-wrapper {
+            background-color: #ffffff;
+            width: 800px;
+            height: 300px;
+            display: flex;
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .ticket-main {
+            flex: 3;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 2.5px dashed #cbd5e1;
+        }
+
+        .ticket-stub {
+            flex: 1;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #ffffff;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .ticket-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .ticket-title { font-family: 'Playfair Display', serif; font-size: 28px; color: #0f172a; letter-spacing: -1px; }
+        .ticket-badge { background-color: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+
+        .display-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .display-value { font-size: 1.1rem; color: #1e293b; font-weight: 500; min-height: 1.5rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+
+        .action-step-box { background-color: #f8fafc; padding: 15px; border-radius: 12px; margin-top: 15px; border-left: 4px solid var(--primary); }
+        .action-step-text { font-size: 14px; color: #334155; line-height: 1.5; font-style: italic; }
+
+        .stub-title { font-size: 12px; font-weight: 700; letter-spacing: 3px; margin-bottom: 15px; opacity: 0.8; }
+        .stub-number { font-family: 'Playfair Display', serif; font-size: 36px; margin-bottom: 10px; color: #f8fafc; }
+        .stub-footer { font-size: 9px; opacity: 0.5; margin-top: 20px; }
+
+        .hole { position: absolute; width: 30px; height: 30px; background-color: var(--bg); border-radius: 50%; right: 185px; z-index: 2; }
+        .hole-top { top: -15px; }
+        .hole-bottom { bottom: -15px; }
+
+        .controls { margin-top: 40px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        .btn-outline { background-color: white; color: var(--primary-dark); border: 2px solid var(--primary-dark); }
+        .btn-outline:hover { background-color: #f1f5f9; }
+
+        #messageBox {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 850px) {
+            .ticket-wrapper { width: 100%; height: auto; flex-direction: column; max-width: 350px; }
+            .ticket-main { border-right: none; border-bottom: 2.5px dashed #cbd5e1; }
+            .ticket-stub { padding: 20px; }
+            .hole { display: none; }
+            #ticketCaptureArea { padding: 10px; width: 100%; display: flex; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>My Prime Time Ticket</h1>
+        <p>인생의 런웨이, 나를 빛나게 하는 마음의 보석을 찾아보세요!</p>
+    </header>
+
+    <div class="form-card">
+        <div class="form-group">
+            <label for="studentName">1. 이름 (NAME)</label>
+            <span class="help-text">런웨이를 걸을 멋진 주인공의 이름을 적어주세요.</span>
+            <input type="text" id="studentName" placeholder="여러분의 이름을 입력하세요" maxlength="10">
+        </div>
+        
+        <div class="form-group">
+            <label for="keyword">2. 내가 닮고 싶은 모습 (MY VALUE)</label>
+            <span class="help-text">최순화 모델의 이야기에서 가장 닮고 싶은 마음의 보석은 무엇인가요?</span>
+            <select id="keyword">
+                <option value="">가장 닮고 싶은 마음을 선택하세요</option>
+                <option value="내 삶의 주인 되기 (주도성)">내 삶의 주인 되기 (주도성)</option>
+                <option value="다시 일어서는 용기 (회복탄력성)">다시 일어서는 용기 (회복탄력성)</option>
+                <option value="끝까지 포기하지 않기 (끈기)">끝까지 포기하지 않기 (끈기)</option>
+                <option value="두려워도 도전해보기 (도전정신)">두려워도 도전해보기 (도전정신)</option>
+                <option value="내 마음 돌아보기 (자기성찰)">내 마음 돌아보기 (자기성찰)</option>
+                <option value="직접 입력">내가 생각한 새로운 보석 적기...</option>
+            </select>
+            <input type="text" id="customKeyword" placeholder="내가 생각한 가치를 적어보세요" style="display:none; margin-top:10px;">
+        </div>
+
+        <div class="form-group">
+            <label for="action">3. 나만의 '작은 실천' (ACTION STEP)</label>
+            <span class="help-text">내일부터 당장 시작할 수 있는 아주 작은 행동 한 가지를 적어볼까요?</span>
+            <textarea id="action" rows="2" placeholder="예: '문제가 안 풀려도 5분만 더 고민하기', '매일 아침 스트레칭 하기'"></textarea>
+        </div>
+    </div>
+
+    <div class="ticket-preview-title">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> 나의 특별한 티켓 미리보기
+    </div>
+
+    <div id="ticketCaptureArea">
+        <div class="ticket-wrapper" id="ticketContent">
+            <div class="hole hole-top"></div>
+            <div class="hole hole-bottom"></div>
+            
+            <div class="ticket-main">
+                <div class="ticket-header">
+                    <div>
+                        <div class="ticket-title">MY PRIME TIME TICKET</div>
+                        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">나의 가치를 빛내는 주도적인 한 걸음</div>
+                    </div>
+                    <div class="ticket-badge">6-5 CLASS</div>
+                </div>
+
+                <div style="margin-top: 25px;">
+                    <div style="display: flex; gap: 30px; margin-bottom: 15px;">
+                        <div style="flex: 1;">
+                            <div class="display-label">Passenger Name</div>
+                            <div class="display-value" id="viewName">주인공 대기 중...</div>
+                        </div>
+                        <div style="flex: 2;">
+                            <div class="display-label">Core Value Gem</div>
+                            <div class="display-value" id="viewKeyword">마음의 보석을 골라주세요</div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-step-box">
+                        <div class="display-label" style="color: var(--primary);">Next Runway Action Step</div>
+                        <div class="action-step-text" id="viewAction">"여러분의 멋진 다짐이 여기에 보물처럼 나타납니다!"</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ticket-stub">
+                <div class="stub-title">BOARDING PASS</div>
+                <div class="stub-number" id="stubId">#024</div>
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">THE RUNWAY<br>OF MY LIFE</div>
+                <div class="stub-footer">Erica Lab x Gyeol</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-primary" onclick="saveAsImage()">
+            <i class="fa-solid fa-image"></i> 내 티켓 이미지로 저장하기
+        </button>
+        <button class="btn btn-outline" onclick="resetForm()">
+            <i class="fa-solid fa-rotate-right"></i> 다시 써볼래요
+        </button>
+    </div>
+</div>
+
+<div id="messageBox">티켓을 만들고 있습니다...</div>
+
+<script>
+    const nameInput = document.getElementById('studentName');
+    const keywordSelect = document.getElementById('keyword');
+    const customKeywordInput = document.getElementById('customKeyword');
+    const actionInput = document.getElementById('action');
+
+    const viewName = document.getElementById('viewName');
+    const viewKeyword = document.getElementById('viewKeyword');
+    const viewAction = document.getElementById('viewAction');
+    const stubId = document.getElementById('stubId');
+    const messageBox = document.getElementById('messageBox');
+
+    stubId.innerText = '#' + Math.floor(Math.random() * 900 + 100);
+
+    function showMessage(text, duration = 3000) {
+        messageBox.innerText = text;
+        messageBox.style.display = 'block';
+        setTimeout(() => {
+            messageBox.style.display = 'none';
+        }, duration);
+    }
+
+    function updateTicket() {
+        viewName.innerText = nameInput.value || "주인공 대기 중...";
+        
+        let keyword = keywordSelect.value;
+        if (keyword === "직접 입력") {
+            customKeywordInput.style.display = 'block';
+            keyword = customKeywordInput.value;
+        } else {
+            customKeywordInput.style.display = 'none';
+        }
+        viewKeyword.innerText = keyword || "마음의 보석을 골라주세요";
+        
+        viewAction.innerText = actionInput.value ? `"${actionInput.value}"` : '"여러분의 멋진 다짐이 여기에 보물처럼 나타납니다!"';
+    }
+
+    function resetForm() {
+        nameInput.value = '';
+        keywordSelect.value = '';
+        customKeywordInput.value = '';
+        customKeywordInput.style.display = 'none';
+        actionInput.value = '';
+        updateTicket();
+        stubId.innerText = '#' + Math.floor(Math.random() * 900 + 100);
+        showMessage("다시 적을 수 있도록 준비했습니다!");
+    }
+
+    async function saveAsImage() {
+        if (!nameInput.value || !actionInput.value) {
+            showMessage("이름과 다짐을 모두 적어주어야 티켓이 완성돼요! 😊");
+            return;
+        }
+
+        showMessage("멋진 티켓 이미지를 저장하고 있습니다...");
+        
+        const captureArea = document.getElementById('ticketCaptureArea');
+        
+        try {
+            const canvas = await html2canvas(captureArea, {
+                backgroundColor: null,
+                scale: 2,
+                logging: false,
+                useCORS: true
+            });
+            
+            const image = canvas.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = `${nameInput.value}_전성기_티켓.png`;
+            link.click();
+            
+            showMessage("티켓 저장 성공! 패들렛에 자랑해 볼까요? 🚀");
+        } catch (error) {
+            console.error("저장 실패:", error);
+            showMessage("이미지 저장 중 오류가 발생했습니다. 직접 화면을 캡처해 주세요.");
+        }
+    }
+
+    nameInput.addEventListener('input', updateTicket);
+    keywordSelect.addEventListener('change', updateTicket);
+    customKeywordInput.addEventListener('input', updateTicket);
+    actionInput.addEventListener('input', updateTicket);
+</script>
+
+</body>
+</html>
